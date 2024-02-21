@@ -6,12 +6,13 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from models.city import City
 from models import storage
+import models
 
 class State(BaseModel, Base):
     """ State class """
     __tablename__ = 'states'
     name = Column(String(128), nullable=False)
-    if models.storage_type == 'db':
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
         cities = relationship("City", cascade="all, delete", backref="state")
     else:
         @property
