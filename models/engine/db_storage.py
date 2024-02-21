@@ -32,20 +32,22 @@ class DBStorage:
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        session = self.__session
-        obj_dict = {}
+        d = {}
         if cls:
-            objs = session.query(eval(cls)).all()
-            for obj in objs:
-                key = "{}.{}".format(type(obj).__name__, obj.id)
-                obj_dict[key] = obj
+            if type(cls) is str:
+                cls = eval(cls)
+            query = self.__session.query(cls)
+            for elem in query:
+                key = "{}.{}".format(type(elem).__name__, elem.id)
+                d[key] = elem
         else:
-            for name in models.classes:
-                objs = session.query(models.classes[name]).all()
-                for obj in objs:
-                    key = "{}.{}".format(type(obj).__name__, obj.id)
-                    obj_dict[key] = obj
-        return obj_dict
+            lista = [State, City, User, Place, Review, Amenity]
+            for clase in lista:
+                query = self.__session.query(clase)
+                for elem in query:
+                    key = "{}.{}".format(type(elem).__name__, elem.id)
+                    d[key] = elem
+        return (dic)
     
     def new(self, obj):
         """Adds new object to storage database"""
@@ -63,6 +65,6 @@ class DBStorage:
     def reload(self):
         """Loads storage database"""
         Base.metadata.create_all(self.__engine)
-        self.__session = scoped_session(sessionmaker(bind=self.__engine,
-                                                      expire_on_commit=False))
-        self.__session = scoped_session(SessionFactory)()
+        s = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        Session = scoped_session(s)
+        self.__session = Session()
