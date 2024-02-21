@@ -22,3 +22,8 @@ class User(BaseModel, Base):
     last_name = Column(
         String(128), nullable=True
     ) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else ''
+    places = relationship(
+        'Place',
+        backref='user',
+        cascade='all, delete'
+    )if os.getenv('HBNB_TYPE_STORAGE') == 'db' else None
