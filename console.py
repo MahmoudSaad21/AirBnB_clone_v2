@@ -2,6 +2,10 @@
 """ Console Module """
 import cmd
 import sys
+import re
+import os
+import uuid
+from datetime import datetime
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -114,58 +118,53 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-    """ Create an object of any class with given parameters """
-    if not args:
-        print("** class name missing **")
-        return
+        """ Create an object of any class with given parameters """
+        ignored_attrs = ('id', 'created_at', 'updated_at', '__class__')
+        class_match = re.match(r'(?P<class_name>\w+)', args)
+        if class_match is None:
+            print("** class name missing **")
+            return
 
-    # Split the arguments to extract class name and parameters
-    args_list = args.split()
-    class_name = args_list[0]
+        class_name = class_match.group('class_name')
 
-    if class_name not in HBNBCommand.classes:
-        print("** class doesn't exist **")
-        return
+        if class_name not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
 
-    # Initialize parameters dictionary
-    params = {}
+        obj_kwargs = {}
 
-    # Parse key-value pairs
-    for item in args_list[1:]:
-        # Split the item to separate key and value
-        key, value = item.split('=')
-        
-        # Process value according to its type
-        if value.startswith('"') and value.endswith('"'):
-            # Remove quotes and replace underscores with spaces for strings
-            value = value[1:-1].replace('_', ' ')
-        elif '.' in value:
-            # Convert value to float if it contains a dot
-            try:
+        param_pattern = r'(?P<name>\w+)=(?P<value>"[^"]*"|[-+]?\d+\.\d+|[-+]?\d+)'
+        params_match = re.findall(param_pattern, args)
+        for param_match in params_match:
+            key_name = param_match[0]
+            value = param_match[1]
+
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1].replace('_', ' ')
+            elif '.' in value:
                 value = float(value)
-            except ValueError:
-                print(f"Error: Invalid value '{value}' for float type.")
-                continue
-        else:
-            # Convert value to int by default
-            try:
+            else:
                 value = int(value)
-            except ValueError:
-                print(f"Error: Invalid value '{value}' for int type.")
-                continue
+            obj_kwargs[key_name] = value
+
+            if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+                if 'id' not in obj_kwargs:
+                    obj_kwargs['id'] = str(uuid.uuid4())
+                if 'created_at' not in obj_kwargs:
+                    obj_kwargs['created_at'] = str(datetime.now())
+                if 'updated_at' not in obj_kwargs:
+                    obj_kwargs['updated_at'] = str(datetime.now())
+                new_instance = HBNBCommand.classes[class_name](**obj_kwargs)
+                new_instance.save()
+                print(new_instance.id)
+        else:
+            new_instance = HBNBCommand.classes[class_name]()
+            for key, value in obj_kwargs.items():
+                if key not in ignored_attrs:
+                    setattr(new_instance, key, value)
+            new_instance.save()
+            print(new_instance.id)
         
-        # Add key-value pair to parameters dictionary
-        params[key] = value
-
-    # Create a new instance of the specified class with the provided parameters
-    new_instance = HBNBCommand.classes[class_name](**params)
-    
-    # Save the newly created instance
-    storage.save()
-
-    # Print the ID of the newly created instance
-    print(new_instance.id)
-
     def help_create(self):
         """ Help information for the create method """
         print("Creates a class of any type")
