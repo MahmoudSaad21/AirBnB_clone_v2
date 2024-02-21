@@ -3,6 +3,7 @@
 import uuid
 import os
 import models
+from models import storage
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, DateTime
@@ -46,14 +47,16 @@ class BaseModel:
 
     def to_dict(self):
         """Convert instance into dict format"""
-        new_dict = self.__dict__.copy()
-        new_dict['__class__'] = self.__class__.__name__
-        new_dict['created_at'] = self.created_at.isoformat()
-        new_dict['updated_at'] = self.updated_at.isoformat()
-        if '_sa_instance_state' in new_dict:
-            del new_dict['_sa_instance_state']
-        return new_dict
-
+        res = {}
+        for key, value in self.__dict__.items():
+            if key != '_sa_instance_state':
+                if isinstance(value, datetime):
+                    res[key] = value.isoformat()
+                else:
+                    res[key] = value
+        res['__class__'] = self.__class__.__name__
+        return res
+        
     def delete(self):
         """Deletes this BaseModel instance from the storage"""
         storage.delete(self)
