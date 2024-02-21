@@ -114,17 +114,57 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
-        if not args:
-            print("** class name missing **")
-            return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+    """ Create an object of any class with given parameters """
+    if not args:
+        print("** class name missing **")
+        return
+
+    # Split the arguments to extract class name and parameters
+    args_list = args.split()
+    class_name = args_list[0]
+
+    if class_name not in HBNBCommand.classes:
+        print("** class doesn't exist **")
+        return
+
+    # Initialize parameters dictionary
+    params = {}
+
+    # Parse key-value pairs
+    for item in args_list[1:]:
+        # Split the item to separate key and value
+        key, value = item.split('=')
+        
+        # Process value according to its type
+        if value.startswith('"') and value.endswith('"'):
+            # Remove quotes and replace underscores with spaces for strings
+            value = value[1:-1].replace('_', ' ')
+        elif '.' in value:
+            # Convert value to float if it contains a dot
+            try:
+                value = float(value)
+            except ValueError:
+                print(f"Error: Invalid value '{value}' for float type.")
+                continue
+        else:
+            # Convert value to int by default
+            try:
+                value = int(value)
+            except ValueError:
+                print(f"Error: Invalid value '{value}' for int type.")
+                continue
+        
+        # Add key-value pair to parameters dictionary
+        params[key] = value
+
+    # Create a new instance of the specified class with the provided parameters
+    new_instance = HBNBCommand.classes[class_name](**params)
+    
+    # Save the newly created instance
+    storage.save()
+
+    # Print the ID of the newly created instance
+    print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """

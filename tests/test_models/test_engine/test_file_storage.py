@@ -107,3 +107,29 @@ class test_fileStorage(unittest.TestCase):
         from models.engine.file_storage import FileStorage
         print(type(storage))
         self.assertEqual(type(storage), FileStorage)
+
+    def test_create_with_params(self):
+        """ Test object creation with parameters """
+        storage._FileStorage__objects = {}  
+        storage.reload()
+        storage.all()
+        os.remove('file.json') if os.path.exists('file.json') else None
+
+        storage._FileStorage__objects = {}
+        os.system('echo "create BaseModel name=\"Test\" number=5" | ./console.py')
+
+        obj = list(storage.all().values())[0]
+        self.assertEqual(obj.name, "Test")
+        self.assertEqual(obj.number, 5)
+
+    def test_create_with_invalid_params(self):
+        """ Test object creation with invalid parameters """
+        storage._FileStorage__objects = {}
+        storage.reload()  
+        storage.all()
+        os.remove('file.json') if os.path.exists('file.json') else None  # Remove file if exists
+
+        storage._FileStorage__objects = {}
+        os.system('echo "create BaseModel name=Test invalid_param" | ./console.py')
+
+        self.assertEqual(len(storage.all()), 0)
