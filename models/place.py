@@ -41,6 +41,6 @@ class Place(BaseModel, Base):
     ) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else 0.0
     reviews = relationship(
         'Review',
-        cascade="all, delete, delete-orphan",
+        cascade="all, delete",
         backref='place'
     ) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else None
