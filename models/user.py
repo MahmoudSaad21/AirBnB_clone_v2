@@ -27,3 +27,8 @@ class User(BaseModel, Base):
         backref='user',
         cascade='all, delete'
     )if os.getenv('HBNB_TYPE_STORAGE') == 'db' else None
+     reviews = relationship(
+        'Review',
+        cascade="all, delete, delete-orphan",
+        backref='user'
+    ) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else None
