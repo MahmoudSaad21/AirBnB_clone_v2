@@ -5,8 +5,6 @@ from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from models.city import City
-from models import storage
-import models
 
 class State(BaseModel, Base):
     """ State class """
@@ -18,8 +16,9 @@ class State(BaseModel, Base):
         @property
         def cities(self):
             """Returns the cities in this State"""
+            from models import storage
             city_list = []
-            for city in models.storage.all(City).values():
+            for city in storage.all(City).values():
                 if city.state_id == self.id:
                     city_list.append(city)
             return city_list
