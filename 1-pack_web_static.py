@@ -3,27 +3,26 @@
 Fabric script that generates a .tgz archive from the contents of the
 web_static folder of your AirBnB Clone repo
 """
+
 from fabric.api import local
 from datetime import datetime
+import os
 
 
 def do_pack():
-    """
-    Generates a .tgz archive from the contents of the web_static folder
-    """
-    now = datetime.now()
-    tgz_file = "versions/web_static_{}{}{}{}{}{}.tgz".format(
-        now.year,
-        now.month,
-        now.day,
-        now.hour,
-        now.minute,
-        now.second
-    )
+    """Create the versions folder if it doesn't exist"""
+    try:
+        if not os.path.exists("versions"):
+            os.makedirs("versions")
 
-    local("mkdir -p versions")
-    result = local("tar -cvzf {} web_static".format(tgz_file))
+        # Generate the archive path using the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        archive_name = "web_static_{}.tgz".format(timestamp)
+        archive_path = os.path.join("versions", archive_name)
 
-    if result.failed:
+        local("tar -czvf {} web_static".format(archive_path))
+        return archive_path
+
+    except Exception as e:
+        print("An error occurred:", e)
         return None
-    return tgz_file
