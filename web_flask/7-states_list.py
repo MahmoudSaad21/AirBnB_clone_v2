@@ -14,6 +14,8 @@ app = Flask(__name__)
 def states_list_route():
     """
     List states: display a HTML page: (inside the tag BODY)
+    Returns:
+        html: template that lists all states sort by name A->Z
     """
     states = storage.all("State").values()
     return render_template("7-states_list.html", states=states)
