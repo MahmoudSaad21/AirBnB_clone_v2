@@ -53,9 +53,6 @@ def number_route(n):
 def number_template_route(n):
     """
     display a HTML page only if n is an integer:
-        H1 tag: “Number: n” inside the tag BODY
-    Returns:
-        html: template displaying the value of n
     """
     return render_template('5-number.html', n=n)
 
